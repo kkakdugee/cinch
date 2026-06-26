@@ -1,0 +1,14 @@
+A clean modern enterprise presentation slide, 16:9 landscape, on a light warm-white background (hex F2F4F8). Minimalist design-system aesthetic with generous negative space and a precise grid, part of a matching slide set. Typography is a geometric humanist sans-serif (like IBM Plex Sans) in deep navy ink (hex 13203B).
+
+Top-left: a small uppercase eyebrow label in indigo (hex 2348E0) reading "WHAT CINCH DOES". Directly beneath it, a large bold headline in navy ink: "Keep what it actually uses. Drop the rest."
+
+Center of the slide: a clear left-to-right process flow with three stages connected by thin horizontal arrows.
+- LEFT stage: a large rounded-rectangle card outlined in red (hex D8392F) with a red header label "GRANTED", densely filled with a grid of small red pill-shaped tags (the over-broad permissions).
+- MIDDLE stage: a small rounded circular node outlined in indigo (hex 2348E0) containing a simple crosshair target icon, with the label "CINCH" directly beneath the node. One thin arrow points from the GRANTED card into this node, and another thin arrow points out of it to the right.
+- RIGHT stage: a small rounded-rectangle card outlined in green (hex 0E9D57) with a green header label "RIGHT-SIZED", containing just three green pill-shaped tags with these exact labels: "Blob: Read", "Blob: List", "Secret: Get".
+
+For the LEFT "GRANTED" card use exactly these sixteen tag labels and do not invent any others: "Blob: Read", "Blob: Write", "Blob: Delete", "Blob: List", "Container: Create", "Container: Delete", "Container: SetPermissions", "Account: Manage", "Secret: Get", "Secret: List", "Secret: Set", "Secret: Delete", "Secret: Purge", "Secret: Backup", "Key: Delete", "Key: Encrypt". These are Microsoft Azure permissions; do not use any AWS service names (no S3, DynamoDB, Lambda, EC2, IAM, CloudWatch).
+
+Below the RIGHT "RIGHT-SIZED" card, a small italic dark-gray caption reading "as commands you run, not a report".
+
+Flat clean vector illustration, no photography, no 3D, no heavy gradients, crisp thin strokes, high legibility, balanced composition, lots of whitespace, professional security-product look.
