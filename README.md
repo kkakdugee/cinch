@@ -2,6 +2,8 @@
 
 **IAM Access Analyzer, but for AI agents.**
 
+📺 **[Watch the demo](https://youtu.be/yy4Clcs0Erg)**
+
 AI agents in Microsoft Foundry ship with whatever permissions a developer grants
 to "just make it work" — usually broad, account-wide, read/write/delete. Cinch
 reads what an agent was **granted** (its Entra agent-identity RBAC) and what it
