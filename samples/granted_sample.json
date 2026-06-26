@@ -1,0 +1,42 @@
+{
+  "principal_id": "11111111-2222-3333-4444-555555555555",
+  "granted": [
+    {
+      "role_name": "Storage Blob Data Owner",
+      "service": "storage",
+      "scope": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-demo/providers/Microsoft.Storage/storageAccounts/acmedata",
+      "data_actions": [
+        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
+        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write",
+        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete",
+        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/manageOwnership/action"
+      ]
+    },
+    {
+      "role_name": "Key Vault Secrets Officer",
+      "service": "keyvault",
+      "scope": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-demo/providers/Microsoft.KeyVault/vaults/acme-kv",
+      "data_actions": [
+        "Microsoft.KeyVault/vaults/secrets/read",
+        "Microsoft.KeyVault/vaults/secrets/update/action",
+        "Microsoft.KeyVault/vaults/secrets/delete"
+      ]
+    },
+    {
+      "role_name": "Storage Blob Data Contributor",
+      "service": "storage",
+      "scope": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-demo/providers/Microsoft.Storage/storageAccounts/acmearchive",
+      "data_actions": [
+        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
+        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write",
+        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete"
+      ]
+    }
+  ],
+  "granted_tools": [
+    { "name": "github-mcp", "kind": "mcp_server", "permissions": ["repo.read", "repo.write"] },
+    { "name": "payments-mcp", "kind": "mcp_server", "permissions": ["charge", "refund"] },
+    { "name": "send_email", "kind": "function", "permissions": ["send"] },
+    { "name": "Microsoft Graph", "kind": "api_permission", "permissions": ["Mail.Read", "Mail.ReadWrite"] }
+  ]
+}

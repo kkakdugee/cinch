@@ -1,0 +1,35 @@
+================================================================================
+CINCH
+Right-sizes AI agent permissions based on observed usage.
+================================================================================
+
+Track: Security and Trustworthy Systems
+
+
+KEYWORDS
+--------------------------------------------------------------------------------
+AI agents, least privilege, agent security, Azure RBAC, Microsoft Foundry, MCP,
+CIEM, attack surface reduction
+
+
+DESCRIPTION
+--------------------------------------------------------------------------------
+During development, AI agents tend to accumulate more permissions than they end up
+using: broad Azure roles, and a set of tools or MCP servers wired up to make them
+work. If one is compromised, the exposure is everything it can reach, not just what
+it needed, and tightening it back by hand is tedious enough that it rarely happens.
+
+**Cinch automates this.** It compares what an agent was *granted* against what it
+*actually used*, then generates a right-sized, least-privilege replacement:
+
+- **Granted:** the identity's Azure RBAC role assignments and its set of connected
+  tools.
+- **Used:** the resources its identity touched (from Azure resource diagnostic
+  logs) and the tools it invoked (from a Foundry agent's run history).
+- **Output:** a narrowed role per resource, as ready-to-apply `az` CLI and Bicep
+  commands.
+
+The analysis is deterministic rather than model-based, so every recommendation is
+auditable and reproducible. And because it works from the agent's real data-plane
+and tool-level activity, it sees usage that permission tools relying only on
+control-plane logs do not.

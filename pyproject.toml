@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-least-privilege"
+version = "0.1.0"
+description = "IAM Access Analyzer for AI agents: right-size Entra agent-identity RBAC from real Microsoft Foundry trace usage."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+# Core analysis (diff + recommend + offline mode) needs only the standard library.
+dependencies = []
+
+[project.optional-dependencies]
+# Needed only for a live run against Azure.
+azure = [
+    "azure-identity>=1.17",
+    "azure-mgmt-authorization>=4.0",
+    "azure-monitor-query>=1.4",
+]
+# Needed only to stand up / exercise the demo agent.
+demo = [
+    "azure-ai-projects>=1.0.0b1",
+    "azure-ai-agents>=1.0.0b1",
+]
+dev = ["pytest>=8"]
+ui = ["streamlit>=1.36"]
+
+[project.scripts]
+alp = "alp.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

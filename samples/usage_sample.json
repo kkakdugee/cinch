@@ -1,0 +1,31 @@
+{
+  "used": [
+    {
+      "service": "storage",
+      "audience": "https://storage.azure.com",
+      "resource_id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-demo/providers/Microsoft.Storage/storageAccounts/acmedata/blobServices/default/containers/reports",
+      "operation": "read",
+      "data_action": "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
+      "count": 142
+    },
+    {
+      "service": "storage",
+      "audience": "https://storage.azure.com",
+      "resource_id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-demo/providers/Microsoft.Storage/storageAccounts/acmedata/blobServices/default/containers/reports",
+      "operation": "list",
+      "count": 18
+    },
+    {
+      "service": "keyvault",
+      "audience": "https://vault.azure.net",
+      "resource_id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-demo/providers/Microsoft.KeyVault/vaults/acme-kv/secrets/db-conn",
+      "operation": "read",
+      "data_action": "Microsoft.KeyVault/vaults/secrets/read",
+      "count": 7
+    }
+  ],
+  "used_tools": [
+    { "name": "github-mcp", "permissions_used": ["repo.read"], "count": 40 },
+    { "name": "Microsoft Graph", "permissions_used": ["Mail.Read"], "count": 12 }
+  ]
+}

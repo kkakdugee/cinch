@@ -1,0 +1,85 @@
+// =============================================================================
+// Reconstructing what a Foundry agent ACTUALLY did, from live telemetry.
+// Everything below was validated against a real gpt-5-mini agent run (2026-06),
+// not assumed. Where a path did NOT hold up live, it says so.
+// =============================================================================
+//
+// TL;DR of what is true on a live tenant:
+//   * Tool NAME + ARGUMENTS  -> AUTHORITATIVE source is the run-steps API
+//     (run_steps.list -> step_details.tool_calls[].function.{name,arguments}).
+//     This is what scripts/live_demo.py collects. App Insights did NOT reliably
+//     carry the tool name on this SDK version (see query 2).
+//   * Tool ACTIVITY / VOLUME / I-O tied to an agent -> App Insights (query 1).
+//   * Data-plane RESOURCE access (blob read, secret get) with the calling
+//     identity -> Azure RESOURCE diagnostic logs, not agent traces (query 3).
+//
+// Tables: querying the Log Analytics WORKSPACE (LogsQueryClient.query_workspace)
+// uses workspace schema -> AppTraces / AppDependencies, columns Message /
+// Properties / OperationId / TimeGenerated. (Classic App Insights RESOURCE schema
+// is traces / dependencies, message / customDimensions / timestamp.)
+//
+// @AgentId is substituted by the collector with the agent id (e.g. asst_...).
+
+
+// -----------------------------------------------------------------------------
+// QUERY 1 (VALIDATED): per-agent tool activity from App Insights.
+// Ties tool-output trace events to the agent through the dependency-span tree
+// (OperationId), and reports how many tool calls the agent made plus their
+// outputs. Proves data-plane/tool activity volume per agent over a long window.
+// NOTE: gen_ai.tool.message carries the tool OUTPUT + call id, but NOT the tool
+// name (that comes from the run-steps API, query 2). Validated live: 7 tool
+// messages tied to a 4-task run.
+// -----------------------------------------------------------------------------
+let agentId = "@AgentId";
+let agentOps =
+    AppDependencies
+    | where Properties has agentId            // gen_ai.agent.id appears in the span
+    | distinct OperationId;
+AppTraces
+| where OperationId in (agentOps)
+| where Message == "gen_ai.tool.message"
+| extend payload = parse_json(tostring(parse_json(Properties)["gen_ai.event.content"]))
+| extend call_id = tostring(payload["id"]), output = tostring(payload["content"])
+| summarize tool_call_count = count(), output_samples = make_set(output, 5)
+| extend agent_id = agentId
+
+
+// -----------------------------------------------------------------------------
+// QUERY 2 (AUTHORITATIVE for tool name + arguments): the run-steps API.
+// App Insights did not reliably emit the tool name on this SDK version, so the
+// collector reads names + arguments directly from the service. Pseudocode (see
+// scripts/live_demo.py for the working implementation):
+//
+//   for step in client.run_steps.list(thread_id, run_id):
+//       for call in step.step_details.tool_calls:
+//           name = call.function.name          # e.g. "read_report"
+//           args = json.loads(call.function.arguments)   # e.g. {"container":"reports"}
+//
+// To aggregate over a window, enumerate the agent's threads -> runs -> run_steps.
+// `type` is function | mcp | openapi | code_interpreter -- the tool/MCP layer
+// control-plane CIEM cannot see.
+
+
+// -----------------------------------------------------------------------------
+// QUERY 3 (for the DATA-PLANE RBAC dimension): resource diagnostic logs.
+// An agent's blob reads / secret gets do NOT appear in agent traces OR in the
+// Azure Activity Log (which is why CIEM is blind to them). They DO appear in the
+// target resource's own diagnostic logs when enabled. Enable
+// StorageBlobLogs / Key Vault AuditEvent diagnostic settings and attribute by the
+// agent identity's object id. Skeleton (enable diagnostics first):
+//
+//   StorageBlobLogs
+//   | where TimeGenerated > ago(30d)
+//   | where RequesterObjectId == "<agent-identity-object-id>"
+//   | extend op = case(OperationName has "Read","read",
+//                      OperationName has "List","list",
+//                      OperationName has_any ("Write","Put"),"write",
+//                      OperationName has "Delete","delete","other")
+//   | summarize count() by AccountName, ContainerName = Uri, op
+//
+//   AzureDiagnostics            // Key Vault
+//   | where ResourceType == "VAULTS" and identity_claim_oid_g == "<agent-oid>"
+//   | extend op = case(OperationName has "Get","read",
+//                      OperationName has "Set","write",
+//                      OperationName has "Delete","delete","other")
+//   | summarize count() by Resource, op

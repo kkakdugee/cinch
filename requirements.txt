@@ -1,0 +1,14 @@
+# Core analysis + offline mode require NO third-party packages (stdlib only).
+# Install the package itself with:  pip install -e .
+
+# For a LIVE run against Azure (pip install -e ".[azure]"):
+azure-identity>=1.17
+azure-mgmt-authorization>=4.0
+azure-monitor-query>=1.4
+
+# For standing up / exercising the demo agent (pip install -e ".[demo]"):
+# azure-ai-projects>=1.0.0b1
+# azure-ai-agents>=1.0.0b1
+
+# For tests (pip install -e ".[dev]"):
+# pytest>=8
