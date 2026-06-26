@@ -1,0 +1,97 @@
+% Cinch -- problem statement slide.
+% Build:  pdflatex problem.tex
+\documentclass[aspectratio=169]{beamer}
+\usefonttheme{professionalfonts}
+\usepackage[T1]{fontenc}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{tikz}
+\usetikzlibrary{positioning, calc, arrows.meta}
+
+% --- Cinch palette ---
+\definecolor{paper}{HTML}{F2F4F8}
+\definecolor{ink}{HTML}{13203B}
+\definecolor{inkmute}{HTML}{69768F}
+\definecolor{indigo}{HTML}{2348E0}
+\definecolor{redline}{HTML}{D8392F}
+\definecolor{kept}{HTML}{0E9D57}
+\definecolor{line}{HTML}{D8DEE9}
+\definecolor{redbg}{HTML}{FDECEE}
+\definecolor{greenbg}{HTML}{E9F9EF}
+
+\setbeamercolor{background canvas}{bg=paper}
+\setbeamertemplate{navigation symbols}{}
+
+% --- chip + panel styles ---
+\tikzset{
+  chip/.style={rounded corners=2pt, draw=line, fill=white, inner sep=3.2pt,
+               font=\scriptsize\ttfamily, text=ink, minimum height=6.5mm},
+  chipcut/.style={chip, fill=redbg, draw=redline!50, text=redline},
+  chipkeep/.style={chip, fill=greenbg, draw=kept!55, text=kept},
+  panel/.style={rounded corners=7pt, draw=line, fill=white, line width=0.7pt},
+  caplabel/.style={font=\scriptsize\ttfamily, text=inkmute},
+}
+
+\begin{document}
+\begin{frame}[plain]
+\begin{tikzpicture}[overlay, remember picture]
+  \coordinate (O) at (current page.north west);
+
+  % eyebrow + headline
+  \node[anchor=north west, font=\bfseries\ttfamily\scriptsize, text=indigo]
+        at ($(O)+(1.15,-0.95)$) {THE PROBLEM};
+  \node[anchor=north west, text=ink, font=\bfseries, align=left]
+        at ($(O)+(1.1,-1.35)$)
+        {\fontsize{19}{22}\selectfont An agent uses a sliver of\\[2pt]
+         \fontsize{19}{22}\selectfont what it's allowed to touch.};
+
+  % ===== LEFT: what it uses (small) =====
+  \node[panel, anchor=north west, minimum width=3.0cm, minimum height=2.0cm]
+        (used) at ($(O)+(1.15,-3.4)$) {};
+  \node[anchor=south west, caplabel] at ($(used.north west)+(0.05,0.06)$)
+        {WHAT IT USES};
+  \node[chipkeep, anchor=north west] (u1) at ($(used.north west)+(0.28,-0.45)$) {read};
+  \node[chipkeep, anchor=north west] (u2) at ($(u1.north east)+(0.18,0)$) {list};
+  \node[chipkeep, anchor=north west] (u3) at ($(u1.south west)+(0,-0.22)$) {get-secret};
+  \node[anchor=north west, caplabel] at ($(used.south west)+(0.28,0.55)$)
+        {one container,};
+  \node[anchor=north west, caplabel] at ($(used.south west)+(0.28,0.30)$)
+        {one secret};
+
+  % ===== RIGHT: what it was granted (huge) =====
+  \node[panel, anchor=north east, minimum width=8.7cm, minimum height=5.0cm]
+        (gr) at ($(O)+(15.6,-3.0)$) {};
+  \node[anchor=south west, caplabel] at ($(gr.north west)+(0.05,0.06)$)
+        {WHAT IT WAS GRANTED};
+
+  % grid of capability chips (the wall)
+  \begin{scope}[shift={($(gr.north west)+(0.32,-0.55)$)}]
+    \foreach \x/\lbl [count=\i] in {0/read, 1/list, 2/write, 3/delete, 4/manage} {
+      \node[chipcut, anchor=north west] at (\x*1.62,0) {\lbl};
+    }
+    \foreach \x/\lbl [count=\i] in {0/get, 1/set, 2/delete, 3/backup, 4/purge} {
+      \node[chipcut, anchor=north west] at (\x*1.62,-0.85) {\lbl};
+    }
+    \foreach \x/\lbl [count=\i] in {0/read, 1/list, 2/write, 3/delete, 4/manage} {
+      \node[chipcut, anchor=north west] at (\x*1.62,-1.70) {\lbl};
+    }
+    \foreach \x/\lbl [count=\i] in {0/read, 1/list, 2/write, 3/delete} {
+      \node[chipcut, anchor=north west] at (\x*1.62,-2.55) {\lbl};
+    }
+  \end{scope}
+  \node[anchor=south west, caplabel] at ($(gr.south west)+(0.32,0.20)$)
+        {Owner on the whole storage account + Officer on the whole vault + 3 more roles};
+
+  % gap arrow between the two
+  \draw[-{Latex[length=2.2mm]}, line width=1pt, redline]
+        ($(used.east)+(0.15,0)$) -- ($(gr.west)+(-0.15,0)$)
+        node[midway, above, font=\scriptsize\bfseries, text=redline] {the gap};
+
+  % bottom line
+  \node[anchor=north west, text=ink, font=\itshape, align=left]
+        at ($(O)+(1.15,-8.55)$)
+        {If that agent is ever hijacked, the blast radius isn't what it needed.
+         {\bfseries\normalfont\,It's everything it could reach.}};
+\end{tikzpicture}
+\end{frame}
+\end{document}

@@ -27,6 +27,7 @@ from datetime import timedelta
 from typing import Optional
 from urllib.parse import urlsplit
 
+from . import auditlog as A
 from .models import DELETE, LIST, OTHER, READ, WRITE, UsedOperation
 
 STORAGE_AUDIENCE = "https://storage.azure.com"
@@ -157,6 +158,7 @@ def collect_storage(
 | where StatusText =~ 'Success'
 | project OperationName, Uri
 """
+    A.tag("LOGS", "querying StorageBlobLogs (blob data-plane access)")
     used: list[UsedOperation] = []
     for rec in _query(client, workspace_id, kql, lookback_days):
         op = _norm_storage_op(rec.get("OperationName", ""))
@@ -174,7 +176,10 @@ def collect_storage(
                 count=1,
             )
         )
-    return _aggregate(used)
+    out = _aggregate(used)
+    for u in out:
+        A.usage(u.operation, u.count, u.resource_id.split("/")[-1])
+    return out
 
 
 def collect_keyvault(
@@ -209,6 +214,7 @@ def collect_keyvault(
             "requestUri_s",
         ),
     ]
+    A.tag("LOGS", "querying Key Vault AuditEvent (secret data-plane access)")
     for _table, kql, uri_col in queries:
         rows = _query(client, workspace_id, kql, lookback_days)
         if not rows:
@@ -232,7 +238,10 @@ def collect_keyvault(
                 )
             )
         if used:
-            return _aggregate(used)
+            out = _aggregate(used)
+            for u in out:
+                A.usage(u.operation, u.count, u.resource_id.split("/")[-1])
+            return out
     return []
 
 

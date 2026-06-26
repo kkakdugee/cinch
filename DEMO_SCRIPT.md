@@ -5,23 +5,29 @@ Optional lines are marked and can be cut to land closer to 3 minutes.
 
 ---
 
-## [0:00] Hook
-*[On camera, or a title card: "Cinch — right-sizing AI agent permissions"]*
+## [0:00] The problem
+*[Slide: THE PROBLEM, small USED box vs large GRANTED wall, with a "the gap" arrow]*
 
-> Every AI agent you deploy runs with some set of permissions, and almost always
-> it has more than it needs. During development you grant it broad access just to
-> get it working: wide Azure roles, a handful of tools, and you rarely go back to
-> tighten it. The problem is what happens if that agent gets hijacked, say through
-> prompt injection. The damage isn't limited to what it needed. It's everything it
-> was allowed to touch. Cinch fixes that automatically.
+> So AI agents aren't just chatbots anymore. They actually go off and do things for
+> you, and to do that, they get real access. Your data, your secrets, the tools
+> they can call. The problem is, nobody really tunes that access. When you're
+> building an agent, you give it broad permissions just to get it working, and then
+> you move on. So you end up with an agent that only ever needs a fraction of what
+> it's been given, but it's holding on to all of it. And if it ever
+> gets hijacked, say by a prompt injection, the damage isn't whatever it needed.
+> It's everything you gave it.
 
-## [0:30] What it does
-*[Simple diagram: GRANTED vs USED, arrow to a smaller "right-sized" box]*
+## [0:45] What Cinch does
+*[Slide: a large GRANTED box, through Cinch, to a small RIGHT-SIZED box]*
 
-> The idea is simple. Cinch compares what an agent was granted against what it
-> actually did, then hands you a smaller set of permissions that still covers the
-> real behavior, as commands you can apply directly. Let me show you on a real
-> agent running in Azure.
+> So that's the gap Cinch goes after. What it does is pretty simple. It looks at two
+> things: everything the agent was granted, and everything it actually used. The
+> difference between them, all the access it was handed but never touched, is
+> exactly what you can safely take away. Cinch works that out for you and gives you
+> back a smaller set of permissions that still covers everything the agent really
+> does. And it doesn't just hand you a report to act on, it gives you the exact
+> commands to tighten the access yourself. Let me show you on a real agent running
+> in Azure.
 
 ## [1:00] The before state
 *[Terminal: `az role assignment list` for the agent identity]*
