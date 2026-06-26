@@ -68,73 +68,93 @@ Optional lines are marked and can be cut to land closer to 3 minutes.
 > So there's the whole picture, side by side. A pile of standing access, and the
 > sliver of it this agent has actually used.
 
-*(The sections below are the earlier terminal-based draft. Beats 4 to 6 — right-size, apply and verify, and the close — still need rewriting to match this web-UI flow.)*
+## [2:30] Right-size (live)
+*[Screen: still on the "granted access" ledger, with the "Right-size with Cinch →" button visible.]*
 
-## [1:45] Run Cinch
-*[Run `python scripts/live_dataplane_demo.py`]*
+> Okay. So now I just hit right-size, and watch what Cinch does with all of it.
 
-> Now I run Cinch. On the granted side, it reads the agent's RBAC assignments
-> straight from Azure. On the used side, it reconstructs exactly what the identity
-> touched from Azure's resource diagnostic logs: the blob reads, the secret get,
-> each matched to this agent's identity.
+*[DO: click **Right-size with Cinch →**. The heading changes to "redlining unused access" and the rows start animating one at a time. The backend CLI window prints the keep and cut decisions in parallel.]*
 
-*[Output: granted 3 roles, used 3 operations, findings list]*
+> It goes through it role by role. Anything the agent actually used stays. Anything
+> it never touched turns red and gets cut. The write and delete on that storage
+> account, gone. The roles on the accounts it never opened, gone completely.
 
-> And here's the analysis. It flags the over-broad scope, the unused write and
-> delete it never needed, and the role on the account it never touched. Then it
-> recommends the right size: Storage Blob Data Reader on the one container, Key
-> Vault Secrets User on the one secret, and drop the rest.
+*[SHOW: the over-scoped roles collapse into a narrowed replacement (the green caption, e.g. "→ Storage Blob Data Reader · read-only on one container"), and the fully-unused rows strike through and disappear.]*
 
-*[Highlight the 65 -> 3 line]*
+> And it's not just deleting things, it's tightening the scope. That account-wide
+> Owner becomes read-only on the one container it actually reads from. The
+> vault-wide Officer becomes read access to the single secret. Same job, a fraction
+> of the reach.
 
-> It even quantifies it. A blast-radius score, the permitted operations times their
-> reach, drops from 65 to 3. About a 95 percent cut.
+*[SHOW: the hero counts up — the big percentage, with "exposure 74 → 3" beneath it and "Tightened to least privilege".]*
 
-## [2:50] Apply and verify
-*[Show the generated `apply.sh`, then run it]*
+> And here's the whole thing as one number. Cinch scores the blast radius, every
+> permission the agent holds, weighted by how far it reaches. It drops from
+> seventy-four down to three. Almost everything it was holding, it never needed.
 
-> And this isn't just a report. Cinch generates the exact `az` commands, so I run
-> them.
+*[SHOW: an apply panel appears below with the generated az commands and an "Apply to Azure" button.]*
 
-*[`az role assignment list` again, now showing 2 roles]*
+> And this isn't a report telling me what I ought to do someday. Cinch has already
+> written the exact commands to make it real. So let's run them.
 
-> Now look at the identity again. The account-wide Owner is gone. The vault-wide
-> Officer is gone. The unused role is gone. What's left is read only on the single
-> container and the single secret it actually uses. Same agent, same behavior, a
-> fraction of the attack surface. Detected, applied, and verified, end to end.
+## [3:20] Apply and verify (live)
+*[Screen: the apply panel from the right-size step, showing the generated az commands and the "Apply to Azure" button.]*
 
-## [3:30] Why it's different, and how
-*[Diagram: control plane vs data plane]*
+> So these are the actual commands Cinch wrote. Let me apply them.
 
-> One thing worth calling out. The actions that matter for an agent, reading a
-> blob, fetching a secret, calling a tool, all happen at the data plane. A lot of
-> permission tooling only watches the control plane, the management activity log,
-> where those reads never appear. Cinch works from the data-plane and tool-level
-> signals, so it sees what the agent really does.
+*[DO: click **Apply to Azure** and confirm the prompt. It deletes the broad roles and creates the two narrow ones on the live identity.]*
+*[SHOW: in the backend CLI window, the az commands run one at a time, each with a real success check. This is Cinch changing live Azure.]*
 
-> The same granted-versus-used logic applies to the agent's tools too. In our
-> Foundry agent, Cinch flagged two powerful tools, send email and charge payment,
-> that were wired up but never called, and recommended removing them.
+> And these are running for real, right now. It's deleting the account-wide Owner,
+> deleting the vault-wide Officer, deleting the roles it never used, and creating
+> the two narrow ones in their place. Every line is a real az command, and you can
+> watch each one land.
 
-> *(Optional: This complements tools like Defender's CIEM rather than replacing
-> them.)*
+*[SHOW: when it finishes, Cinch immediately re-scans the identity. The view comes back as "least-privilege access" — two green rows, with the hero showing a checkmark and "Least privilege".]*
+
+> And this is the part that matters. Cinch doesn't just say it worked. It goes
+> straight back to Azure and reads the identity again. And now it comes back clean.
+> The only thing left is read-only on the one container and the one secret this
+> agent actually uses.
+
+> Same agent, doing the exact same job, with a tiny fraction of the access it had a
+> minute ago. Detected, right-sized, applied, and verified, end to end, against a
+> live identity.
 
 ## [4:10] Close
-*[Summary card]*
+*[Screen: stay on the final "least-privilege access" result, or cut to a closing summary card.]*
 
-> And all of this is deterministic. There's no model in the loop, so every
-> recommendation is auditable and reproducible, which is exactly what you want from
-> a security control. The goal is to make least privilege the default for AI
-> agents, derived from what they actually do, instead of a manual chore nobody gets
-> to. That's Cinch.
+> So that's Cinch. It takes an agent, looks at what it can reach versus what it
+> actually touches, and tightens the first down to the second. Automatically, and
+> verified against live Azure.
+
+> Two things I want to leave you with. First, there's no model in the loop. The
+> whole thing is deterministic, so every cut it makes is reproducible, and you can
+> audit exactly why it was made. That's what you want from a security control, not a
+> language model guessing at your permissions.
+
+> Second, this isn't only about Azure roles. The same idea covers the tools an agent
+> can call. In another one of our agents, Cinch flagged two of its most powerful
+> tools, send email and charge payment, that it had never once used, and recommended
+> dropping them. Same granted-versus-used logic, applied to what the agent can do.
+
+> The goal is simple. Make least privilege the default for AI agents, derived from
+> what they actually do, instead of a manual cleanup nobody ever gets around to.
+> That's Cinch.
 
 ---
 
 ## Recording notes
 
-- **To hit ~3 minutes:** cut the "Why it's different" section to just the
-  data-plane line, drop the optional CIEM line, and shorten the tool-layer aside.
-- **Two terminals ready:** one for the `az role assignment list` before/after, one
-  for the Cinch run, so the before/after contrast is instant.
-- **Money shots:** the `65 -> 3` reveal and the after-state `az` list. Hold on each
-  for a beat.
+- **Pre-flight:** run `demo_reset.ps1` to restore the broad roles, then `launch.ps1`
+  (it opens the backend CLI window and the dashboard). Record the same day, since
+  the scan looks back one day of logs.
+- **Screen layout:** keep the browser dashboard and the backend "live backend" CLI
+  window visible at once, so the in-page console and the real Azure calls move
+  together.
+- **Slides:** the problem and "what Cinch does" slides play before the live portion;
+  the close can sit on the final result screen or a summary card.
+- **Money shots:** the redline cut and the `74 → 3` count-up, and the post-apply
+  re-scan coming back clean. Hold on each for a beat.
+- **To trim toward ~3 minutes:** shorten the data-plane aside in the scan beat and
+  the tools aside in the close.
