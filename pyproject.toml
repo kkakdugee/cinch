@@ -25,9 +25,10 @@ demo = [
     "azure-ai-agents>=1.0.0b1",
 ]
 dev = ["pytest>=8"]
-ui = ["streamlit>=1.36"]
+web = ["flask>=3.0"]
 
 [project.scripts]
+cinch = "alp.cli:main"
 alp = "alp.cli:main"
 
 [tool.setuptools.packages.find]

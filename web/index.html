@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cinch</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="lock">🔐</span>
+      <strong>Cinch</strong>
+      <span class="tagline">least privilege for AI agents</span>
+    </div>
+    <div class="controls">
+      <button id="btn-sample" class="btn btn-primary">Load sample</button>
+      <label class="btn"><input type="file" id="file-granted" accept=".json" hidden />granted.json</label>
+      <label class="btn"><input type="file" id="file-used" accept=".json" hidden />used.json</label>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="loading" class="loading">Analyzing…</div>
+
+    <!-- Headline -->
+    <section id="hero" class="hero hidden">
+      <div class="hero-num"><span id="pct">0</span>%</div>
+      <div class="hero-copy">
+        <div class="hero-title">less access after Cinch</div>
+        <div id="hero-sub" class="hero-sub"></div>
+      </div>
+      <div class="megabar">
+        <div id="seg-removed" class="seg seg-removed"></div>
+        <div id="seg-kept" class="seg seg-kept"></div>
+      </div>
+      <div class="megabar-legend">
+        <span><i class="sw sw-red"></i> access removed</span>
+        <span><i class="sw sw-green"></i> access kept</span>
+      </div>
+    </section>
+
+    <!-- What changes -->
+    <section id="changes" class="hidden">
+      <div class="cols">
+        <div class="card">
+          <h3 class="card-title red">Remove</h3>
+          <ul id="remove-list" class="list"></ul>
+        </div>
+        <div class="card">
+          <h3 class="card-title green">Keep, narrowed to what it uses</h3>
+          <ul id="keep-list" class="list"></ul>
+        </div>
+      </div>
+      <button id="why-toggle" class="link">Show what the agent actually did ▾</button>
+      <div id="why" class="why hidden"></div>
+    </section>
+
+    <!-- Apply -->
+    <section id="apply" class="hidden">
+      <div class="apply-head">
+        <h3 class="card-title">Apply</h3>
+        <div class="apply-actions">
+          <button id="btn-copy" class="btn btn-sm">Copy</button>
+          <button id="dl-apply" class="btn btn-sm">⬇ apply.sh</button>
+        </div>
+      </div>
+      <pre id="apply-code" class="code"></pre>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

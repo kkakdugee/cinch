@@ -3,13 +3,13 @@
 Examples
 --------
 Offline (no Azure, uses bundled samples) -- great for the demo and CI:
-    alp analyze --offline
+    cinch analyze --offline
 
 From explicit JSON files:
-    alp analyze --granted granted.json --used used.json
+    cinch analyze --granted granted.json --used used.json
 
 Live against Azure (needs env vars + ``pip install -e ".[azure]"``):
-    alp analyze
+    cinch analyze
 """
 
 from __future__ import annotations
@@ -107,7 +107,7 @@ def _write_artifacts(out_dir: Path, result) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="alp", description=__doc__)
+    parser = argparse.ArgumentParser(prog="cinch", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
 
     analyze = sub.add_parser("analyze", help="Analyze an agent's granted vs. used access.")

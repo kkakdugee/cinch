@@ -1,9 +1,9 @@
-# Agent Least-Privilege Analyzer (`alp`)
+# 🔐 Cinch
 
 **IAM Access Analyzer, but for AI agents.**
 
 AI agents in Microsoft Foundry ship with whatever permissions a developer grants
-to "just make it work" — usually broad, account-wide, read/write/delete. `alp`
+to "just make it work" — usually broad, account-wide, read/write/delete. Cinch
 reads what an agent was **granted** (its Entra agent-identity RBAC) and what it
 **actually did** (tool/resource calls from Foundry traces), diffs them, and emits
 a right-sized, least-privilege RBAC recommendation you can apply.
@@ -57,7 +57,7 @@ The gap is *which* usage they can see:
 - **AI agents live in the data plane** — they read data, fetch secrets, call tools.
   So CIEM is structurally weakest exactly where agents operate.
 
-`alp` right-sizes from the agent's actual behavior on both layers CIEM's
+Cinch right-sizes from the agent's actual behavior on both layers CIEM's
 activity-log model misses: **data-plane resource access** (blob read, secret
 fetch) captured in **resource diagnostic logs** (`StorageBlobLogs`, Key Vault
 `AuditEvent`), and the **tool / MCP** layer captured in **Foundry traces**. It
@@ -70,7 +70,7 @@ fetch) captured in **resource diagnostic logs** (`StorageBlobLogs`, Key Vault
 > blob and one secret. Those reads showed up in `StorageBlobLogs`
 > (`OperationName` GetBlob/ListBlobs, `AuthenticationType` OAuth,
 > `RequesterObjectId` == the agent identity) and the Key Vault audit log — exactly
-> the data-plane signal CIEM's control-plane model can't see — and `alp`
+> the data-plane signal CIEM's control-plane model can't see — and Cinch
 > reconstructed them straight from the logs and right-sized Owner → read-only on
 > the one container actually used. See `scripts/live_dataplane_demo.py`.
 
@@ -85,7 +85,7 @@ dependencies.
 
 ```bash
 pip install -e .
-alp analyze --offline
+cinch analyze --offline
 ```
 
 You'll see an over-privileged agent (Storage **Owner** account-wide, Key Vault
@@ -96,7 +96,7 @@ ready-to-run `az` commands.
 Write artifacts (report, JSON, `apply.sh`, `main.bicep`):
 
 ```bash
-alp analyze --offline --out out
+cinch analyze --offline --out out
 ```
 
 Run the tests:
@@ -109,12 +109,16 @@ pytest -q
 ### Visual UI (best for the pitch)
 
 ```bash
-pip install -e ".[ui]"
-streamlit run app.py
+pip install -e ".[web]"
+python server.py     # then open http://127.0.0.1:5000
 ```
 
-Gauges for blast-radius and tool attack surface, color-coded findings, a
-before/after view, and downloadable `apply.sh`.
+A dashboard that tells the story in three panels — **Granted → Used →
+Right-sized** — with blast-radius and tool-attack-surface metrics, animated
+reduction bars, color-coded findings, and a downloadable `apply.sh`. Built in
+plain HTML/CSS/JS over a thin Flask API; the analysis is the same deterministic
+engine the CLI uses, so the UI and command line never diverge. Loads the bundled
+sample by default, or upload a run's `live_granted.json` / `live_used.json`.
 
 ---
 
@@ -144,7 +148,7 @@ before/after view, and downloadable `apply.sh`.
   and a blast-radius proxy.
 - `tools.py` — right-sizes the **tool / MCP / API-permission** layer (unused
   tools, excess tool scopes) — the dimension CIEM can't see at all.
-- `app.py` — Streamlit UI.
+- `server.py` + `web/` — Flask API + HTML/CSS/JS dashboard (the visual UI).
 
 The Azure-touching parts are thin adapters; the engine (`diff` + `recommend`) is
 pure and unit-tested offline.
@@ -157,8 +161,8 @@ pure and unit-tested offline.
 pip install -e ".[azure]"
 cp .env.example .env    # fill in subscription, agent principal id, workspace id,
                         # and resource group; then load the vars into your shell:
-alp analyze --source diagnostics --out out   # data-plane logs (default)
-alp analyze --source traces      --out out   # App Insights tool-call history
+cinch analyze --source diagnostics --out out   # data-plane logs (default)
+cinch analyze --source traces      --out out   # App Insights tool-call history
 ```
 
 Required access: **Reader** on the subscription (to read role assignments) and
@@ -198,13 +202,13 @@ python scripts/live_demo.py
 ```
 
 Re-run the analyzer on either run's captured data any time:
-`alp analyze --granted out/<run>/live_granted.json --used out/<run>/live_used.json`
+`cinch analyze --granted out/<run>/live_granted.json --used out/<run>/live_used.json`
 
 ---
 
 ## Demo runbook (90 seconds)
 
-1. `streamlit run app.py` (or `alp analyze --offline`) — the agent has **Owner**
+1. `python server.py` (or `cinch analyze --offline`) — the agent has **Owner**
    (account-wide) but only ever **read one container** and **read one secret**.
 2. **Azure RBAC**: findings flag the unused role, over-broad scope, and unused
    write/delete → right-sized to **Reader**, scoped to the exact resources →
@@ -214,42 +218,6 @@ Re-run the analyzer on either run's captured data any time:
    but only reads → remove the unused tools, downgrade the scopes → **7 → 2** tool
    attack surface.
 4. Download `apply.sh` — one command set away from least privilege.
-
----
-
-## Honest limitations (read before pitching)
-
-- **Tracing is GA for prompt agents only** (hosted/workflow/external in preview) —
-  demo on a prompt agent.
-- **Cold-start / observation window.** A brand-new agent has no usage history;
-  like IAM Access Analyzer, you must observe over a representative window. The
-  recommendation is only as good as the window's coverage.
-- **Granularity.** v1 right-sizes at **role + resource** level. For storage this
-  is demonstrated down to the container (from `StorageBlobLogs` URIs); finer
-  action-level splits depend on the diagnostic-log detail each service emits.
-- **Data-plane signal — demonstrated live (2026-06).** A real agent identity's
-  blob/secret reads were reconstructed straight from `StorageBlobLogs` + Key Vault
-  `AuditEvent` (caller object id matched the identity), and right-sized end-to-end.
-  This is the exact signal CIEM's control-plane model misses. Caveat: resource
-  diagnostic settings are **off by default** and must be enabled per resource, and
-  first-event ingestion can lag 10–30 min (Storage was ~3 min, Key Vault slower).
-- **Trace schema — validated live (2026-06).** Tool name + arguments are read
-  authoritatively from the Foundry **run-steps API** (`step_details.tool_calls`),
-  confirmed end-to-end on a real gpt-5-mini agent. App Insights reliably ties
-  tool *activity* + outputs to an agent (via `OperationId`) for long-window
-  history, but on this SDK version did **not** carry the tool *name* on its
-  events — so the collector uses run-steps as the source of truth (see
-  `kql/agent_tool_usage.kql`). Data-plane *resource* access (blob read, secret
-  get) lives in the target resource's diagnostic logs, not agent traces — which
-  is exactly the signal CIEM's activity-log model misses.
-- **Role catalog is a curated subset** (Storage + Key Vault) for the demo; a
-  production version loads the full Azure role catalog programmatically.
-- Concept is **borrowed from AWS IAM Access Analyzer** — novelty is "first for AI
-  agents," and the legibility is the point.
-- **Complements CIEM, doesn't replace it.** Defender for Cloud CIEM already
-  right-sizes agents at the *control-plane* level; `alp`'s contribution is the
-  *data-plane / tool-level* granularity CIEM's activity-log model misses. Never
-  pitch it as "Microsoft has nothing" — pitch the precise blind spot.
 
 ---
 

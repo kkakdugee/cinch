@@ -12,3 +12,6 @@ azure-monitor-query>=1.4
 
 # For tests (pip install -e ".[dev]"):
 # pytest>=8
+
+# For the web dashboard (pip install -e ".[web]"):
+# flask>=3.0
