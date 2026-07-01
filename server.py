@@ -49,8 +49,8 @@ def _roster():
     if primary:
         roster.append({
             "id": primary,
-            "name": os.environ.get("ALP_AGENT_NAME", "report-reader"),
-            "role": "Reads monthly reports and a DB secret",
+            "name": os.environ.get("ALP_AGENT_NAME") or "agent",
+            "role": os.environ.get("ALP_AGENT_ROLE") or "AI agent",
         })
     extra = os.environ.get("ALP_AGENTS", "")  # "name:pid:role|name:pid:role"
     for chunk in [c for c in extra.split("|") if c.strip()]:

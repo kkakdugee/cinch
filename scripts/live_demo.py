@@ -54,16 +54,14 @@ from alp.models import (  # noqa: E402
 from alp.recommend import recommend  # noqa: E402
 
 # --------------------------------------------------------------------------- #
-# Config (env-overridable; defaults point at the validated student-sub demo).
+# Config (env-driven; set these to point at your own Foundry project / demo).
 # --------------------------------------------------------------------------- #
-ENDPOINT = os.environ.get(
-    "ALP_EP", "https://alp-fdry-52f3ok.services.ai.azure.com/api/projects/alp-project"
-)
+ENDPOINT = os.environ.get("ALP_EP", "")
 MODEL = os.environ.get("ALP_MODEL", "gpt-5-mini")
 APPINSIGHTS_CONN = os.environ.get("ALP_AI_CONN", "")
 
-SUB = os.environ.get("ALP_SUBSCRIPTION_ID", "bae3d5e2-719b-4cc9-8447-f762f0fc0b33")
-RG = os.environ.get("ALP_DEMO_RG", "rg-alp-demo")
+SUB = os.environ.get("ALP_SUBSCRIPTION_ID", "")
+RG = os.environ.get("ALP_DEMO_RG", "")
 STORAGE_ACCT = os.environ.get("ALP_DEMO_STORAGE", "alpdemodata")
 ARCHIVE_ACCT = os.environ.get("ALP_DEMO_ARCHIVE", "alpdemoarchive")
 KEY_VAULT = os.environ.get("ALP_DEMO_KV", "alp-demo-kv")

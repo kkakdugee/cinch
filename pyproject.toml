@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "agent-least-privilege"
 version = "0.1.0"
-description = "IAM Access Analyzer for AI agents: right-size Entra agent-identity RBAC from real Microsoft Foundry trace usage."
+description = "Least privilege for AI agents: right-size Azure RBAC for an agent identity from its real observed usage (data-plane diagnostic logs and Foundry tool calls)."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

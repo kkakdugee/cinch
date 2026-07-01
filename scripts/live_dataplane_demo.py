@@ -14,11 +14,11 @@ declared:
 The right-sizing is therefore computed from observed reality on both sides. This
 is the "demonstrated, not designed" version of the pitch.
 
-Env (validated student-sub defaults shown):
+Env (all required unless a default is noted):
   ALP_SUBSCRIPTION_ID   subscription id
   ALP_PRINCIPAL_ID      the agent identity's AAD object (principal) id
   ALP_WORKSPACE_ID      Log Analytics workspace GUID the diagnostics flow to
-  ALP_DEMO_RG           resource group holding the resources (default rg-alp-demo)
+  ALP_DEMO_RG           resource group holding the resources (or ALP_RESOURCE_GROUP)
   ALP_LOOKBACK_DAYS     observation window (default 1 for the fresh demo)
 
 Usage:
@@ -99,7 +99,7 @@ def main(argv=None) -> int:
     sub = os.environ["ALP_SUBSCRIPTION_ID"]
     pid = os.environ["ALP_PRINCIPAL_ID"]
     ws = os.environ["ALP_WORKSPACE_ID"]
-    rg = os.environ.get("ALP_DEMO_RG", "rg-alp-demo")
+    rg = os.environ.get("ALP_DEMO_RG") or os.environ["ALP_RESOURCE_GROUP"]
     lookback = int(os.environ.get("ALP_LOOKBACK_DAYS", "1"))
 
     print(f"\n[1/3] Reading GRANTED RBAC from the live agent identity {pid}")

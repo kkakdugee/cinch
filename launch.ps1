@@ -5,22 +5,30 @@
 #
 #   ./launch.ps1
 #
-# The env values below are this demo's Azure identifiers (not secrets). Edit them
-# to point at a different agent identity / workspace.
+# The agent identity / workspace / resources come from demo.config.ps1 (gitignored).
+# Copy demo.config.example.ps1 to demo.config.ps1 and fill in your values first.
 
 $ErrorActionPreference = "Stop"
 $root = $PSScriptRoot
 
+$cfgPath = Join-Path $root "demo.config.ps1"
+if (-not (Test-Path $cfgPath)) {
+  Write-Error "Missing demo.config.ps1 — copy demo.config.example.ps1 to demo.config.ps1 and fill in your Azure values."
+  exit 1
+}
+. $cfgPath
+
 # --- demo target (the live agent identity Cinch analyzes) ---
 $envVars = @{
-  ALP_SUBSCRIPTION_ID = "bae3d5e2-719b-4cc9-8447-f762f0fc0b33"
-  ALP_PRINCIPAL_ID    = "60988bd7-de74-4f35-a8b2-ed4c0d7c1177"
-  ALP_AGENT_NAME      = "report-reader"
-  ALP_WORKSPACE_ID    = "357fb243-654e-488f-8f47-7d6c54ca7ff7"
-  ALP_DEMO_RG         = "rg-alp-demo"
-  ALP_LOOKBACK_DAYS   = "1"
+  ALP_SUBSCRIPTION_ID = $Cfg.SubscriptionId
+  ALP_PRINCIPAL_ID    = $Cfg.AgentObjectId
+  ALP_AGENT_NAME      = $Cfg.AgentName
+  ALP_AGENT_ROLE      = $Cfg.AgentRole
+  ALP_WORKSPACE_ID    = $Cfg.WorkspaceId
+  ALP_DEMO_RG         = $Cfg.ResourceGroup
+  ALP_LOOKBACK_DAYS   = $Cfg.LookbackDays
   # Extra agents for the roster: "name:principalId:role" joined by |
-  ALP_AGENTS          = "invoice-bot:14cb280a-6779-45e1-bfdd-a2f2d51b88a8:Processes invoices (dormant)|export-agent:82ad7c16-9a8d-47be-afca-74e504b412b4:Exports data nightly (dormant)"
+  ALP_AGENTS          = $Cfg.ExtraAgents
 }
 
 # Build a command that sets the env in the new window, then runs the server.
